@@ -86,27 +86,27 @@ class image_converter:
 
     # Calculate the relevant joint angles from the image
   def detect_joint_angles(self,imageX, imageY):
-    cam1 = self.pixel2meter(imageY)
-    # cam2 = self.pixel2meter(imageY)
+    camera_1 = self.pixel2meter(imageY)
+    camera_2 = self.pixel2meter(imageY)
 
     # Obtain the centre of each coloured blob 
-    centerYZ = cam1 * self.detect_yellow(imageY)
-    # centerXZ = cam2 * self.detect_yellow(imageX)
+    centerYZ = camera_1 * self.detect_yellow(imageY)
+    centerXZ = camera_2 * self.detect_yellow(imageX)
 
-    blueYZ = cam1 * self.detect_blue(imageY)
-    # blueXZ = cam2 * self.detect_blue(imageX)
+    blueYZ = camera_1 * self.detect_blue(imageY)
+    blueXZ = camera_2 * self.detect_blue(imageX)
 
-    redYZ = cam1 * self.detect_red(imageY)
-    # redXZ = cam2 * self.detect_red(imageX)
+    redYZ = camera_1 * self.detect_red(imageY)
+    redXZ = camera_2 * self.detect_red(imageX)
 
 
     # Solve using trigonometry
-    # ja2 = np.arctan2(centerYZ[0]- blueYZ[0], centerYZ[1] - blueYZ[1])
-    # ja3 = np.arctan2(centerXZ[0]- blueXZ[0], centerXZ[1] - blueXZ[1])
-    # ja4 = np.arctan2(redYZ[0]-blueYZ[0], redYZ[1]-blueYZ[1]) - ja1
+    ja2 = np.arctan2(centerYZ[0]- blueYZ[0], centerYZ[1] - blueYZ[1])
+    ja3 = np.arctan2(centerXZ[0]- blueXZ[0], centerXZ[1] - blueXZ[1])
+    ja4 = np.arctan2(redYZ[0]-blueYZ[0], redYZ[1]-blueYZ[1]) - ja1
     
     
-    # return np.array([ja2, ja3, ja4])
+    return np.array([ja2, ja3, ja4])
   
   # Recieve data, process it, and publish
   def callback(self,data):
@@ -120,7 +120,7 @@ class image_converter:
     # The image is loaded as cv_imag
 
     # Uncomment if you want to save the image
-    cv2.imwrite('cam1.png', cv_image)
+    # cv2.imwrite('cam1.png', cv_image)
 
     a = self.detect_joint_angles(cv_image)
     cv2.imshow('window', cv_image)
