@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import roslib
 import sys
 import rospy
@@ -33,15 +35,15 @@ class Move:
             next_joint3_pos = np.pi/2 * (np.sin(np.pi/20 * t))
             next_joint4_pos = np.pi/2 * (np.sin(np.pi/18 * t))
         # Publish the results
-        try:
-        # Publish a new position for joint 2,3 and 4
-            self.joint_pub2.publish(next_joint2_pos)
-            self.joint_pub3.publish(next_joint3_pos)
-            self.joint_pub4.publish(next_joint4_pos)
-        except CvBridgeError as e:
-            print(e)
+            try:
+            # Publish a new position for joint 2,3 and 4
+                self.joint_pub2.publish(next_joint2_pos)
+                self.joint_pub3.publish(next_joint3_pos)
+                self.joint_pub4.publish(next_joint4_pos)
+            except CvBridgeError as e:
+                print(e)
         
-        rate.sleep()
+            rate.sleep()
         # call the class
 
 def main(args):
