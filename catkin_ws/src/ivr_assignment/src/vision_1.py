@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import roslib
 import sys
 import rospy
@@ -35,43 +33,6 @@ class image_converter:
 
     self.image1 = []
     self.image2 = []
-    self.joints = Float64MultiArray()
-    
-   '''
-    a =  self.detect_joint_angles(self.image1, self.image2)
-    self.joints.data = a
-
-    try:
-      self.image_pub1.publish(self.bridge.cv2_to_imgmsg(self.image1, "bgr8"))
-      self.image_pub2.publish(self.bridge.cv2_to_imgmsg(self.image2, "bgr8"))
-      self.joints_pub.publish(self.joints)
-    except CvBridgeError as e:
-      print(e)
-    '''
-
-# Recieve data, process it, and publish
-  def callback1(self,data):
-    # Recieve the image
-    try:
-      self.image1 = self.bridge.imgmsg_to_cv2(data, "bgr8")
-    except CvBridgeError as e:
-      print(e)
-        
-    cv2.waitKey(3)
-
-
-  def callback2(self,data):
-    # Recieve the image
-    try:
-      self.image2 = self.bridge.imgmsg_to_cv2(data, "bgr8")
-    except CvBridgeError as e:
-      print(e)
-    
-    cv2.imshow('window', self.image1)
-    cv2.imshow('window', self.image2)
-
-    cv2.waitKey(3)
-
 
 
   # In this method you can focus on detecting the centre of the red circle
@@ -121,18 +82,7 @@ class image_converter:
       return np.array([cx, cy])
 
 
-  # Calculate the conversion from pixel to meter
-  def pixel2meter(self,image):
-      # Obtain the centre of each coloured blob
-      circle1Pos = self.detect_yellow(image)
-      circle2Pos = self.detect_green(image)
-      # find the distance between two circles
-      dist = np.sum((circle1Pos - circle2Pos)**2)
-      return 4 / np.sqrt(dist)
-
-
-    # Calculate the relevant joint angles from the image
-  def detect_joint_angles(self,imageX, imageY):
+def detect_joint_angles(self,imageX, imageY):
     camera_1 = self.pixel2meter(imageY)
     camera_2 = self.pixel2meter(self.image2)
 
@@ -140,21 +90,114 @@ class image_converter:
     centerYZ = camera_1 * self.detect_yellow(imageY)
     centerXZ = camera_2 * self.detect_yellow(imageX)
 
+    yellow_c = centerXZ[0], centerYZ[0], - centerXZ[1]
+
     blueYZ = camera_1 * self.detect_blue(imageY)
     blueXZ = camera_2 * self.detect_blue(imageX)
+
+    blue_c = blueXZ[0], blueYZ[0], - blueXZ[1]
 
     redYZ = camera_1 * self.detect_red(imageY)
     redXZ = camera_2 * self.detect_red(imageX)
 
+    red_c = redXZ[0], redYZ[0], - redXZ[1]
+
+    blue_frame = blue_c - yellow_c
+    red_frame = red_c - yellow_c
+
+    if blue_frame[2] > 0:
+      ja2 = np.arctan2(blue_frame[0], blue_frame[2])
+      # ja2 = np.arctan2(centerYZ[0]- blueYZ[0], centerYZ[1] - blueYZ[1])
+    elif blue_frame[0] > 0:
+      ja2 = np.pi / 2
+    else:
+      ja2 = - np.pi / 2
+
+    j2_rotation_mat = np.array([
+      [np.cos(ja2), 0, np.sin(ja2)],
+      [0,1,0],
+      [np.sin(ja2), 0, np.cos(ja2)]
+    ])
+
+    blue_frame_ref2 = np.matmul(j2_rotation_mat, blue_frame)
+    red_frame_ref2 = np.matmul(j2_rotation_mat, red_frame)
+
+    opp = blue_frame_ref2[1]
+
+    if blue_frame_ref2[2] > 0:
+      ja3 = np.arctan2(blue_frame_ref2[1], blue_frame_ref2[2])
+      # ja2 = np.arctan2(centerYZ[0]- blueYZ[0], centerYZ[1] - blueYZ[1])
+    elif blue_frame_ref2[1] > 0:
+      ja3 = np.pi / 2
+    else:
+      ja3 = - np.pi / 2
+
+  
+    j3_rotation_mat = np.array([
+      [1,0,0],
+      [0, np.cos(ja3), -np.sin(ja3)],
+      [0, np.sin(ja3), np.cos(ja3)]
+    ])
+
+    blue_frame_ref3 = np.matmul(j3_rotation_mat, blue_frame_ref2)
+    red_frame_ref3 = np.matmul(j3_rotation_mat, red_frame_ref2)
+
+    opp = blue_frame_ref2[1]
+
+    if blue_frame_ref3[2] > 0:
+      ja4 = np.arctan2(blue_frame_ref3[0], blue_frame_ref3[2])
+      # ja2 = np.arctan2(centerYZ[0]- blueYZ[0], centerYZ[1] - blueYZ[1])
+    elif blue_frame_ref3[0] > 0:
+      ja4 = np.pi / 2
+    else:
+      ja4 = - np.pi / 2
+
+
+
 
     # Solve using trigonometry
-    ja2 = np.arctan2(centerYZ[0]- blueYZ[0], centerYZ[1] - blueYZ[1])
-    ja3 = np.arctan2(centerXZ[0]- blueXZ[0], centerXZ[1] - blueXZ[1])
-    ja4 = np.arctan2(redYZ[0]-blueYZ[0], redYZ[1]-blueYZ[1]) - ja2
+    # ja3 = np.arctan2(centerXZ[0]- blueXZ[0], centerXZ[1] - blueXZ[1])
+    # ja4 = np.arctan2(redYZ[0]-blueYZ[0], redYZ[1]-blueYZ[1]) - ja2
     
     
     return np.array([ja2, ja3, ja4])
   
+  
+  # Recieve data, process it, and publish
+  def callback1(self,data):
+    # Recieve the image
+    try:
+      self.image1 = self.bridge.imgmsg_to_cv2(data, "bgr8")
+    except CvBridgeError as e:
+      print(e)
+
+    cv2.waitKey(3)
+
+
+  def callback2(self,data):
+    # Recieve the image
+    try:
+      self.image2 = self.bridge.imgmsg_to_cv2(data, "bgr8")
+    except CvBridgeError as e:
+      print(e)
+    
+    a = self.detect_joint_angles()
+    cv2.imshow('Image 1', self.image1)
+    cv2.imshow('Image 2', self.image2)
+    self.joints = Float64MultiArray()
+    self.joints.data = a
+    print(a)
+
+    try:
+      self.image_pub1.publish(self.bridge.cv2_to_imgmsg(self.image1, "bgr8"))
+      self.image_pub2.publish(self.bridge.cv2_to_imgmsg(self.image2, "bgr8"))
+      self.joints_pub.publish(self.joints)
+    except CvBridgeError as e:
+      print(e)
+
+    
+    cv2.waitKey(3)
+
 # call the class
 def main(args):
   ic = image_converter()
@@ -167,5 +210,3 @@ def main(args):
 # run the code if the node is called
 if __name__ == '__main__':
     main(sys.argv)
-
-
