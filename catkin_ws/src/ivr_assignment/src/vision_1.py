@@ -152,13 +152,9 @@ def detect_joint_angles(self,imageX, imageY):
     else:
       ja4 = - np.pi / 2
 
-
-
-
     # Solve using trigonometry
     # ja3 = np.arctan2(centerXZ[0]- blueXZ[0], centerXZ[1] - blueXZ[1])
     # ja4 = np.arctan2(redYZ[0]-blueYZ[0], redYZ[1]-blueYZ[1]) - ja2
-    
     
     return np.array([ja2, ja3, ja4])
   
