@@ -4,9 +4,9 @@ class move:
         # initialise the node named vision
         rospy.init_node('move', anonymous=True)
         # initialise a publisher to send the next joint 2 position to joint2_position_controller
-        self.joint_pub2 = rospy. Publisher( "/robot/joint2_position_controller/command", Float64, queue_size = 1)
+        self.joint_pub2 = rospy.Publisher( "/robot/joint2_position_controller/command", Float64, queue_size = 1)
         # initialise a publisher to send the next joint 3 position to joint2_position_controller
-        self.joint_pub3 = rospy. Publisher( "/robot/joint3_position_controller/command", Float 64, queue_size = 1)
+        self.joint_pub3 = rospy.Publisher( "/robot/joint3_position_controller/command", Float 64, queue_size = 1)
         # initialise a publisher to send the next joint 4 position to joint2_position_controller
         self.joint_pub4 = rospy.Publisher( "/robot/joint4_position_controller/command", Float 64, queue_size = 1)
         # Moves joints in sinusoidal fashion
