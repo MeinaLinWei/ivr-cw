@@ -38,7 +38,7 @@ class move:
         m = Move()
         try:
             m.move_joints()
-        except Keyboard Interrupt :
+        except KeyboardInterrupt:
             print("Shutting down")
         CV2.destroyAllWindows()
         # run the code if the node is called
