@@ -33,10 +33,11 @@ class image_converter:
     # initialize the bridge between openCV and ROS
     self.bridge = CvBridge()
 
-    self.image1 = None
-    self.image2 = None
+    self.image1 = []
+    self.image2 = []
     self.joints = Float64MultiArray()
     
+   '''
     a =  self.detect_joint_angles(self.image1, self.image2)
     self.joints.data = a
 
@@ -46,7 +47,30 @@ class image_converter:
       self.joints_pub.publish(self.joints)
     except CvBridgeError as e:
       print(e)
+    '''
 
+# Recieve data, process it, and publish
+  def callback1(self,data):
+    # Recieve the image
+    try:
+      self.image1 = self.bridge.imgmsg_to_cv2(data, "bgr8")
+    except CvBridgeError as e:
+      print(e)
+        
+    cv2.waitKey(3)
+
+
+  def callback2(self,data):
+    # Recieve the image
+    try:
+      self.image2 = self.bridge.imgmsg_to_cv2(data, "bgr8")
+    except CvBridgeError as e:
+      print(e)
+    
+    cv2.imshow('window', self.image1)
+    cv2.imshow('window', self.image2)
+
+    cv2.waitKey(3)
 
 
 
@@ -110,7 +134,7 @@ class image_converter:
     # Calculate the relevant joint angles from the image
   def detect_joint_angles(self,imageX, imageY):
     camera_1 = self.pixel2meter(imageY)
-    camera_2 = self.pixel2meter(imageX)
+    camera_2 = self.pixel2meter(self.image2)
 
     # Obtain the centre of each coloured blob 
     centerYZ = camera_1 * self.detect_yellow(imageY)
@@ -131,60 +155,6 @@ class image_converter:
     
     return np.array([ja2, ja3, ja4])
   
-  # Recieve data, process it, and publish
-  def callback1(self,data):
-    # Recieve the image
-    try:
-      cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
-    except CvBridgeError as e:
-      print(e)
-    
-    self.image1 = cv_image
-    # Perform image processing task (your code goes here)
-    # The image is loaded as cv_imag
-
-    # Uncomment if you want to save the image
-    # cv2.imwrite('cam1.png', cv_image)
-    # image1 = cv2.imread("camera1.png",0)
-
-    # a = self.detect_joint_angles("camera1.png", "camera2.png")
-    cv2.imshow('window', self.image1)
-    cv2.waitKey(3)
-
-    # self.joints = Float64MultiArray()
-    # self.joints.data = a
-
-    # Publish the results
-    # try:
-    #   self.image_pub.publish(self.bridge.cv2_to_imgmsg(cv_image, "bgr8"))
-    #   self.joints_pub.publish(self.joints)
-    # except CvBridgeError as e:
-    #   print(e)
-
-  def callback2(self,data):
-    # Recieve the image
-    try:
-      cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
-    except CvBridgeError as e:
-      print(e)
-    
-    self.image2 = cv_image
-
-    cv2.imshow('window', self.image1)
-    cv2.waitKey(3)
-
-  # def get_joint_angles(self):
-  #   a =  self.detect_joint_angles(self.image1, self.image2)
-    # self.joints = Float64MultiArray()
-    # self.joints.data = a
-
-    # Publish the results
-    # try:
-    #   self.image_pub.publish(self.bridge.cv2_to_imgmsg(cv_image, "bgr8"))
-    #   self.joints_pub.publish(self.joints)
-    # except CvBridgeError as e:
-    #   print(e)
-
 # call the class
 def main(args):
   ic = image_converter()
