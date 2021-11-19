@@ -117,6 +117,14 @@ class image_converter:
     
     cv2.waitKey(3)
 
+  def pixel2meter(self,image):
+      # Obtain the centre of each coloured blob
+      circle1Pos = self.detect_yellow(image)
+      circle2Pos = self.detect_green(image)
+      # find the distance between two circles
+      dist = np.sum((circle1Pos - circle2Pos)**2)
+      return 4 / np.sqrt(dist)
+
   def detect_joint_angles(self):
       camera_1 = self.pixel2meter(self.image1)
       camera_2 = self.pixel2meter(self.image2)
