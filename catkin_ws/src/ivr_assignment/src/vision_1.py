@@ -90,7 +90,7 @@ class image_converter:
     except CvBridgeError as e:
       print(e)
 
-    cv2.waitKey(3)
+    # cv2.waitKey(3)
 
 
   def callback2(self,data):
@@ -107,6 +107,8 @@ class image_converter:
     self.joints.data = a
     print(a)
 
+    cv2.waitKey(1)
+
     try:
       self.image_pub1.publish(self.bridge.cv2_to_imgmsg(self.image1, "bgr8"))
       self.image_pub2.publish(self.bridge.cv2_to_imgmsg(self.image2, "bgr8"))
@@ -115,7 +117,7 @@ class image_converter:
       print(e)
 
     
-    cv2.waitKey(3)
+
 
   def pixel2meter(self,image):
       # Obtain the centre of each coloured blob
@@ -133,17 +135,17 @@ class image_converter:
       centerYZ = camera_1 * self.detect_yellow(self.image1)
       centerXZ = camera_2 * self.detect_yellow(self.image2)
 
-      yellow_c = centerXZ[0], centerYZ[0], - centerXZ[1]
+      yellow_c = np.array([centerXZ[0], centerYZ[0], - centerXZ[1]])
 
       blueYZ = camera_1 * self.detect_blue(self.image1)
       blueXZ = camera_2 * self.detect_blue(self.image2)
 
-      blue_c = blueXZ[0], blueYZ[0], - blueXZ[1]
+      blue_c = np.array([blueXZ[0], blueYZ[0], - blueXZ[1]])
 
       redYZ = camera_1 * self.detect_red(self.image1)
       redXZ = camera_2 * self.detect_red(self.image2)
 
-      red_c = redXZ[0], redYZ[0], - redXZ[1]
+      red_c = np.array([redXZ[0], redYZ[0], - redXZ[1]])
 
       blue_frame = blue_c - yellow_c
       red_frame = red_c - yellow_c
@@ -165,7 +167,6 @@ class image_converter:
       blue_frame_ref2 = np.matmul(j2_rotation_mat, blue_frame)
       red_frame_ref2 = np.matmul(j2_rotation_mat, red_frame)
 
-      opp = blue_frame_ref2[1]
 
       if blue_frame_ref2[2] > 0:
         ja3 = np.arctan2(blue_frame_ref2[1], blue_frame_ref2[2])
