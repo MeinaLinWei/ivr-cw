@@ -15,8 +15,8 @@ class Move:
     def __init__(self):
         # initialise the node named vision
         rospy.init_node('move', anonymous=True)
-        # initialise a publisher to send the next joint 2 position to joint2_position_controller
-        self.joint_pub2 = rospy.Publisher( "/robot/joint2_position_controller/command", Float64, queue_size = 1)
+        # initialise a publisher to send the next joint 1 position to joint1_position_controller
+        self.joint_pub1 = rospy.Publisher( "/robot/joint1_position_controller/command", Float64, queue_size = 1)
         # initialise a publisher to send the next joint 3 position to joint2_position_controller
         self.joint_pub3 = rospy.Publisher( "/robot/joint3_position_controller/command", Float64, queue_size = 1)
         # initialise a publisher to send the next joint 4 position to joint2_position_controller
@@ -26,11 +26,11 @@ class Move:
         rate = rospy.Rate(10)
         while not rospy.is_shutdown():
             time = rospy.get_time()
-            nextpos_ja2 = np.pi/2 * (np.sin(np.pi/15 * time))
+            nextpos_ja1 = np.pi/2 * (np.sin(np.pi/28 * time))
             nextpos_ja3 = np.pi/2 * (np.sin(np.pi/20 * time))
             nextpos_ja4= np.pi/2 * (np.sin(np.pi/18 * time))
             try:
-                self.joint_pub2.publish(nextpos_ja2)
+                self.joint_pub1.publish(nextpos_ja1)
                 self.joint_pub3.publish(nextpos_ja3)
                 self.joint_pub4.publish(nextpos_ja4)
             except CvBridgeError as e:
