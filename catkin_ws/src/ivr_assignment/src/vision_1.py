@@ -184,14 +184,11 @@ class image_converter:
       ])
 
       blue_frame_ref3 = np.matmul(j3_rotation_mat, blue_frame_ref2)
-      red_frame_ref3 = np.matmul(j3_rotation_mat, red_frame_ref2)
+      red_frame_ref3 = np.matmul(j3_rotation_mat, red_frame_ref2) - blue_frame_ref3
 
-      opp = blue_frame_ref2[1]
-
-      if blue_frame_ref3[2] > 0:
-        ja4 = np.arctan2(blue_frame_ref3[0], blue_frame_ref3[2])
-        # ja2 = np.arctan2(centerYZ[0]- blueYZ[0], centerYZ[1] - blueYZ[1])
-      elif blue_frame_ref3[0] > 0:
+      if red_frame_ref3[2] > 0:
+        ja4 = np.arctan2(red_frame_ref3[0], red_frame_ref3[2])
+      elif red_frame_ref3[0] > 0:
         ja4 = np.pi / 2
       else:
         ja4 = - np.pi / 2
