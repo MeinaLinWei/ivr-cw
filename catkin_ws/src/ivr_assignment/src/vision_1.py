@@ -15,8 +15,8 @@ class image_converter:
 
   # Defines publisher and subscriber
   def __init__(self):
-    # initialize the node named image_processing
-    rospy.init_node('image_processing', anonymous=True)
+    # initialize the node named vision 1
+    rospy.init_node('vision_1', anonymous=True)
 
     # initialize a publisher to send images from camera1 to a topic named image_topic1
     self.image_pub1 = rospy.Publisher("image_topic1",Image, queue_size = 1)
@@ -33,11 +33,13 @@ class image_converter:
     # initialize the bridge between openCV and ROS
     self.bridge = CvBridge()
 
+    # store image 1 from camera 1
     self.image1 = []
+    # store image 2 from camera 2
     self.image2 = []
 
 
-  # In this method you can focus on detecting the centre of the red circle
+  # Detecting the centre of the red circle
   def detect_red(self,image):
       # Isolate the blue colour in the image as a binary image
       mask = cv2.inRange(image, (0, 0, 100), (0, 0, 255))
@@ -51,7 +53,6 @@ class image_converter:
       cy = int(M['m01'] / M['m00'])
       return np.array([cx, cy])
  
-
   # Detecting the centre of the green circle
   def detect_green(self,image):
       mask = cv2.inRange(image, (0, 100, 0), (0, 255, 0))
@@ -61,7 +62,6 @@ class image_converter:
       cx = int(M['m10'] / M['m00'])
       cy = int(M['m01'] / M['m00'])
       return np.array([cx, cy])
-
 
   # Detecting the centre of the blue circle
   def detect_blue(self,image):
@@ -116,9 +116,6 @@ class image_converter:
     except CvBridgeError as e:
       print(e)
 
-    
-
-
   def pixel2meter(self,image):
       # Obtain the centre of each coloured blob
       circle1Pos = self.detect_yellow(image)
@@ -134,17 +131,14 @@ class image_converter:
       # Obtain the centre of each coloured blob 
       centerYZ = camera_1 * self.detect_yellow(self.image1)
       centerXZ = camera_2 * self.detect_yellow(self.image2)
-
       yellow_c = np.array([centerXZ[0], centerYZ[0], - centerXZ[1]])
 
       blueYZ = camera_1 * self.detect_blue(self.image1)
       blueXZ = camera_2 * self.detect_blue(self.image2)
-
       blue_c = np.array([blueXZ[0], blueYZ[0], - blueXZ[1]])
 
       redYZ = camera_1 * self.detect_red(self.image1)
       redXZ = camera_2 * self.detect_red(self.image2)
-
       red_c = np.array([redXZ[0], redYZ[0], - redXZ[1]])
 
       blue_frame = blue_c - yellow_c

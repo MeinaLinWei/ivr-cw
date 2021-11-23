@@ -14,25 +14,29 @@ class Move:
 # Defines subscribers
     def __init__(self):
         # initialise the node named vision
-        rospy.init_node('move', anonymous=True)
+        rospy.init_node('vision_2_move', anonymous=True)
         # initialise a publisher to send the next joint 2 position to joint2_position_controller
-        self.joint_pub2 = rospy.Publisher( "/robot/joint2_position_controller/command", Float64, queue_size = 1)
+        self.joint_pub1 = rospy.Publisher( "/robot/joint1_position_controller/command", Float64, queue_size = 10)
         # initialise a publisher to send the next joint 3 position to joint2_position_controller
-        self.joint_pub3 = rospy.Publisher( "/robot/joint3_position_controller/command", Float64, queue_size = 1)
+        self.joint_pub3 = rospy.Publisher( "/robot/joint3_position_controller/command", Float64, queue_size = 10)
         # initialise a publisher to send the next joint 4 position to joint2_position_controller
-        self.joint_pub4 = rospy.Publisher( "/robot/joint4_position_controller/command", Float64, queue_size = 1)
+        self.joint_pub4 = rospy.Publisher( "/robot/joint4_position_controller/command", Float64, queue_size = 10)
     
+        self.nextPositionJoint1 = Float64()
+        self.nextPositionJoint3 = Float64()
+        self.nextPositionJoint4 = Float64()
+
     def move_ja(self):
-        rate = rospy.Rate(10)
         while not rospy.is_shutdown():
+            rate = rospy.Rate(10)
             time = rospy.get_time()
-            nextpos_ja2 = np.pi/2 * (np.sin(np.pi/15 * time))
-            nextpos_ja3 = np.pi/2 * (np.sin(np.pi/20 * time))
-            nextpos_ja4= np.pi/2 * (np.sin(np.pi/18 * time))
+            self.nextPositionJoint1.data = np.pi/2 * (np.sin(np.pi/15 * time))
+            self.nextPositionJoint3.data = np.pi/2 * (np.sin(np.pi/20 * time))
+            self.nextPositionJoint4.data = np.pi/2 * (np.sin(np.pi/18 * time))
             try:
-                self.joint_pub2.publish(nextpos_ja2)
-                self.joint_pub3.publish(nextpos_ja3)
-                self.joint_pub4.publish(nextpos_ja4)
+                self.joint_pub1.publish(self.nextPositionJoint1.data)
+                self.joint_pub3.publish(self.nextPositionJoint3.data)
+                self.joint_pub4.publish(self.nextPositionJoint4.data)
             except CvBridgeError as e:
                 print(e)
         
