@@ -152,9 +152,9 @@ class image_converter:
       blueXZ = camera_2 * self.detect_blue(self.image2)
       blue_blob = np.array([blueXZ[0], blueYZ[0], - blueXZ[1]])
 
-      centerYZ = camera_1 * self.detect_yellow(self.image1)
-      centerXZ = camera_2 * self.detect_yellow(self.image2)
-      yellow_blob = np.array([centerXZ[0], centerYZ[0], - centerXZ[1]])
+      yellowYZ = camera_1 * self.detect_yellow(self.image1)
+      yellowXZ = camera_2 * self.detect_yellow(self.image2)
+      yellow_blob = np.array([yellowXZ[0], yellowYZ[0], - yellowXZ[1]])
 
 
       # calculate reference for initial blue blob position
@@ -163,24 +163,24 @@ class image_converter:
       red_reference_1 = red_blob - yellow_blob
 
 
-      if blue_reference_1[2] > 0:
-        joint_angle_2 = np.arctan2(blue_reference_1[0], blue_reference_1[2])
+      if blue_reference_1[1] > 0:
+        joint_angle_1 = np.arctan2(blue_reference_1[0], blue_reference_1[1])
       elif blue_reference_1[0] > 0:
-        joint_angle_2 = np.pi / 2
+        joint_angle_1 = np.pi / 2
       else:
-        joint_angle_2 = - np.pi / 2
+        joint_angle_1 = - np.pi / 2
 
-      # calculate joint 2 rotation matrix as it rotates in the y-axis
-      joint_2_rotation_matrix = np.array([
-        [np.cos(joint_angle_2), 0, np.sin(joint_angle_2)],
-        [0,1,0],
-        [-np.sin(joint_angle_2), 0, np.cos(joint_angle_2)]
+      # calculate joint 1 rotation matrix as it rotates in the z-axis
+      joint_1_rotation_matrix = np.array([
+        [np.cos(joint_angle_1), -np.sin(joint_angle_1), 0],
+        [np.sin(joint_angle_1), np.cos(joint_angle_1), 0],
+        [0,0,1]
       ])
 
       # calculate reference for new blue blob position
-      blue_reference_2 = np.matmul(joint_2_rotation_matrix, blue_reference_1)
+      blue_reference_2 = np.matmul(joint_1_rotation_matrix, blue_reference_1)
       # calculate reference for new red blob position
-      red_reference_2 = np.matmul(joint_2_rotation_matrix, red_reference_1)
+      red_reference_2 = np.matmul(joint_1_rotation_matrix, red_reference_1)
 
 
       if blue_reference_2[2] > 0:
@@ -215,7 +215,7 @@ class image_converter:
       # joint_anle_3 = np.arctan2(centerXZ[0]- blueXZ[0], centerXZ[1] - blueXZ[1])
       # joint_angle_4 = np.arctan2(redYZ[0]-blueYZ[0], redYZ[1]-blueYZ[1]) - ja2
       
-      return np.array([joint_angle_2, joint_angle_3, joint_angle_4])
+      return np.array([joint_angle_1, joint_angle_3, joint_angle_4])
 
 # call the class
 def main(args):
