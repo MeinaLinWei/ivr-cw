@@ -30,6 +30,12 @@ class vision_1:
 
     # initialize a publisher to send joints' angular position to a topic called joints_pos
     self.joints_pub = rospy.Publisher("joints_pos",Float64MultiArray, queue_size=10)
+    
+    self.joint2_pub = rospy.Publisher("joint_angle_2",Float64, queue_size=10)
+    self.joint3_pub = rospy.Publisher("joint_angle_3",Float64, queue_size=10)
+    self.joint4_pub = rospy.Publisher("joint_angle_4",Float64, queue_size=10)
+
+    
     # initialize the bridge between openCV and ROS
     self.bridge = CvBridge()
 
@@ -127,6 +133,12 @@ class vision_1:
       self.image_pub1.publish(self.bridge.cv2_to_imgmsg(self.image1, "bgr8"))
       self.image_pub2.publish(self.bridge.cv2_to_imgmsg(self.image2, "bgr8"))
       self.joints_pub.publish(self.joints)
+      
+      self.joint2_pub.publish(a[0])
+      self.joint3_pub.publish(a[1])
+      self.joint4_pub.publish(a[2])
+
+
     except CvBridgeError as e:
       print(e)
 

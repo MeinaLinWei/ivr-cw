@@ -17,8 +17,7 @@ class control:
     # initialize the node named image_processing
     rospy.init_node('image_processing', anonymous=True)
     
-    # initialize a publisher to send robot end-effector position
-    self.end_effector_pub = rospy.Publisher("end_effector_prediction",Float64MultiArray, queue_size=10)
+
     # initialize a publisher to send desired trajectory
     self.trajectory_pub = rospy.Publisher("trajectory",Float64MultiArray, queue_size=10)
     
