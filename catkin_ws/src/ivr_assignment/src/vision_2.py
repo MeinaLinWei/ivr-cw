@@ -16,7 +16,7 @@ class image_converter:
   # Defines publisher and subscriber
   def __init__(self):
     # initialize the node named vision 1
-    rospy.init_node('vision_1', anonymous=True)
+    rospy.init_node('vision_2', anonymous=True)
 
     # initialize a publisher to send images from camera1 to a topic named image_topic1
     self.image_pub1 = rospy.Publisher("image_topic1",Image, queue_size = 1)
