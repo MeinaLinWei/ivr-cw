@@ -30,6 +30,9 @@ class vision_2:
 
     # initialize a publisher to send joints' angular position to a topic called joints_pos
     self.joints_pub = rospy.Publisher("joints_pos",Float64MultiArray, queue_size=10)
+
+
+    self.end_eff_pub = rospy.Publisher("end_eff",Float64MultiArray, queue_size=10)
     # initialize the bridge between openCV and ROS
     self.bridge = CvBridge()
 
@@ -121,6 +124,9 @@ class vision_2:
     self.joints.data = a
     print(a)
 
+    self.end_eff = Float64MultiArray()
+    self.end_eff.data = self.detect_end_effector()
+
         # detect robot end-effector from the image
   
 
@@ -130,6 +136,8 @@ class vision_2:
       self.image_pub1.publish(self.bridge.cv2_to_imgmsg(self.image1, "bgr8"))
       self.image_pub2.publish(self.bridge.cv2_to_imgmsg(self.image2, "bgr8"))
       self.joints_pub.publish(self.joints)
+      self.end_eff_pub.publish(self.end_eff)
+
     except CvBridgeError as e:
       print(e)
 

@@ -9,9 +9,6 @@ from std_msgs.msg import String
 from sensor_msgs.msg import Image
 from std_msgs.msg import Float64MultiArray, Float64
 from cv_bridge import CvBridge, CvBridgeError
-import de
-import vision_2 from "./"
-
 
 class control:
 
@@ -67,20 +64,19 @@ class control:
   def callback1(self,data):
     # Recieve the image
     try:
-        self.end_eff = data
+        self.end_eff = data.data
     except CvBridgeError as e:
         print(e)
-   
 
   # Recieve data, process it, and publish
   def callback2(self,data):
     # Recieve the image
     try:
-        self.joints = data
+        self.joints = data.data
     except CvBridgeError as e:
         print(e)
     
-    end_calc = forward_kinematics(self.joints)
+    end_calc = self.forward_kinematics(self.joints)
 
     print("END_CALC:")
     print(end_calc)
@@ -98,6 +94,7 @@ class control:
 
 # Calculate the robot Jacobian
   def calculate_jacobian(self):
+    l1, l2, l3 = 4.0, 3.2, 2.8
     joints = self.joints
     x11 = l3 * np.cos(joints[0]) * np.sin(joints[1]) * np.cos(joints[2]) - l3 * np.sin(joints[0]) * np.sin(joints[2]) + l2 * np.cos(joints[0]) * np.sin(joints[1])
     x12 = l3 * np.sin(joints[0]) * np.cos(joints[1]) * np.cos(joints[2]) + l2 * np.sin(joints[0]) * np.cos(joints[1])
@@ -108,11 +105,11 @@ class control:
     x22 = -l3 * np.cos(joints[0]) * np.cos(joints[1]) * np.cos(joints[2]) - l2 * np.cos(joints[0]) * np.cos(joints[1])
     x23 = l3 * np.cos(joints[0]) * np.sin(joints[1]) * np.sin(joints[2]) + l3 * np.sin(joints[0]) * np.cos(joints[2])
 
-    x13 = 0
-    x32 = -l3 * np.sin(joints[1]) * np.cos(joints[2]) - l2 * sin(joints[1])
+    x31 = 0
+    x32 = -l3 * np.sin(joints[1]) * np.cos(joints[2]) - l2 * np.sin(joints[1])
     x33 = -l3 * np.cos(joints[1]) * np.sin(joints[2]) 
 
-    jacobian = np.array([x11, x12, x13], [x21, x22, x23 ], [x31, x32, x33]])
+    jacobian = np.array([[x11, x12, x13], [x21, x22, x23 ], [x31, x32, x33]])
     return jacobian
 
 
@@ -124,8 +121,6 @@ class control:
     self.time_previous_step2 = cur_time
     
     J_inv = np.linalg.pinv(self.calculate_jacobian())  # calculating the psudeo inverse of Jacobian
-    
-    pos = self.detect_end_effector(image)
     
     # desired trajectory
     pos_d= target
@@ -144,7 +139,7 @@ class control:
         print(e)
         
     # send control commands to joints 
-    q_d = self.control_open(cv_image)
+    q_d = self.control_open(self.target)
     '''
     self.joint1=Float64()
     self.joint1.data= q_d[0]
