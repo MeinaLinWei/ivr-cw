@@ -88,13 +88,6 @@ class control:
     print(self.end_eff)
 
     
-    # Define a circular trajectory
-  def trajectory(self):
-    # get current time
-    cur_time = np.array([rospy.get_time() - self.time_trajectory])
-    x_d = float(5.5* np.cos(cur_time * np.pi/100))
-    y_d = float(5.5 + np.absolute(1.5* np.sin(cur_time * np.pi/100)))
-    return np.array([x_d, y_d])
 
 # Calculate the robot Jacobian
   def calculate_jacobian(self):
@@ -124,9 +117,7 @@ class control:
     self.time_previous_step2 = cur_time
     
     J_inv = np.linalg.pinv(self.calculate_jacobian())  # calculating the psudeo inverse of Jacobian
-    
-    pos = self.detect_end_effector(image)
-    
+        
     # desired trajectory
     pos_d= target
     # estimate derivative of desired trajectory
@@ -145,14 +136,13 @@ class control:
         
     # send control commands to joints 
     q_d = self.control_open(cv_image)
-    '''
+    
     self.joint1=Float64()
     self.joint1.data= q_d[0]
     self.joint3=Float64()
     self.joint3.data= q_d[1]
     self.joint4=Float64()
     self.joint4.data= q_d[2]
-    '''
 
     
     print("TARGET")
@@ -162,12 +152,11 @@ class control:
     print(q_d)
 
     # Publish the results
-    '''
     try:
       self.image_pub.publish(self.bridge.cv2_to_imgmsg(cv_image, "bgr8"))
       self.joints_pub.publish(self.joints)
       self.end_effector_pub.publish(self.end_effector)
-      self.trajectory_pub.publish(self.trajectory_desired)
+
       self.robot_joint1_pub.publish(self.joint1)
       self.robot_joint2_pub.publish(self.joint2)
       self.robot_joint3_pub.publish(self.joint3)
