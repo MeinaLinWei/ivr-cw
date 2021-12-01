@@ -170,7 +170,6 @@ class image_converter:
 
       if blue_frame_ref2[2] > 0:
         ja3 = np.arctan2(blue_frame_ref2[1], blue_frame_ref2[2])
-        # ja2 = np.arctan2(centerYZ[0]- blueYZ[0], centerYZ[1] - blueYZ[1])
       elif blue_frame_ref2[1] > 0:
         ja3 = np.pi / 2
       else:

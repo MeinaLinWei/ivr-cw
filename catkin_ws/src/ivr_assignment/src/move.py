@@ -33,6 +33,7 @@ class Move:
                 self.joint_pub2.publish(nextpos_ja2)
                 self.joint_pub3.publish(nextpos_ja3)
                 self.joint_pub4.publish(nextpos_ja4)
+                print
             except CvBridgeError as e:
                 print(e)
         
