@@ -10,6 +10,7 @@ from sensor_msgs.msg import Image
 from std_msgs.msg import Float64MultiArray, Float64
 from cv_bridge import CvBridge, CvBridgeError
 import de
+import vision_2 from "./"
 
 
 class image_converter:
@@ -32,8 +33,10 @@ class image_converter:
     self.robot_joint3_pub = rospy.Publisher("/robot/joint3_position_controller/command", Float64, queue_size=10)
     # initialize the bridge between openCV and ROS
     self.bridge = CvBridge()
-    # initialize a subscriber to recieve messages rom a topic named /robot/camera1/image_raw and use callback function to recieve data
-    self.image_sub = rospy.Subscriber("/robot/camera1/image_raw",Image,self.callback)
+
+    self.end_eff_sub = rospy.Subscriber("/end_eff",Float64MultiArray, self.callback1)
+    self.joints_sub = rospy.Subscriber("/joints_pos",Float64MultiArray, self.callback2)
+
     # record the begining time
     self.time_trajectory = rospy.get_time()
     # initialize errors
@@ -43,12 +46,9 @@ class image_converter:
     self.error = np.array([0.0,0.0], dtype='float64')
     self.error_d = np.array([0.0,0.0], dtype='float64')
 
+    self.end_eff = Float64MultiArray()
 
-    # detect robot end-effector from the image
-  def detect_end_effector(self,image):
-    a = self.pixel2meter(image)
-    endPos = a * (self.detect_yellow(image) - self.detect_red(image))
-    return endPos
+
 
   # Define a circular trajectory
   def trajectory(self):
@@ -59,20 +59,27 @@ class image_converter:
     return np.array([x_d, y_d])
 
   # Calculate the forward kinematics
-  def forward_kinematics(self,image):
-    joints = self.detect_joint_angles(image)
+  # 0= 1 1=3 2=4
+  def forward_kinematics(self, joints):
+    l1, l2, l3 = 4.0, 3.2, 2.8
+
     end_effector = np.array(
-        [3 * np.sin(joints[0]) + 3 * np.sin(joints[0]+joints[1]) + 
-        3 *np.sin(joints.sum()), 3 * np.cos(joints[0]) + 
-        3 * np.cos(joints[0]+joints[1]) + 3 * np.cos(joints.sum())])
+        [l3 * np.sin(joints[0])*np.sin(joints[1])*np.cos(joints[2]) + l3 * np.cos(joints[0]) * np.sin(joints[2]) + l2 * np.sin(joints[0]) * np.sin(joints[1]),
+        - l3 * np.cos(joints[0])*np.sin(joints[1])*np.cos(joints[2]) + l3 * np.sin(joints[0]) * np.sin(joints[2]) - l2 * np.cos(joints[0]) * np.sin(joints[1]),
+        l3 * np.cos(joints[1])*np.cos(joints[2]) + l2 * np.cos(joints[1]) + l1  
+        ])
     return end_effector
 
     '''
   # Calculate the robot Jacobian
   def calculate_jacobian(self,image):
     joints = self.detect_joint_angles(image)
-    jacobian = np.array([[3 * np.cos(joints[0]) + 3 * np.cos(joints[0]+joints[1]) + 3 *np.cos(joints.sum()), 3 * np.cos(joints[0]+joints[1]) + 3 *np.cos(joints.sum()),  3 *np.cos(joints.sum())], [-3 * np.sin(joints[0]) - 3 * np.sin(joints[0]+joints[1]) - 3 * np.sin(joints.sum()), - 3 * np.sin(joints[0]+joints[1]) - 3 * np.sin(joints.sum()), - 3 * np.sin(joints.sum())]])
+    jacobian = np.array([
+        [3 * np.cos(joints[0]) + 3 * np.cos(joints[0]+joints[1]) + 3 *np.cos(joints.sum()), 3 * np.cos(joints[0]+joints[1]) + 3 *np.cos(joints.sum()),  3 *np.cos(joints.sum())],
+         [-3 * np.sin(joints[0]) - 3 * np.sin(joints[0]+joints[1]) - 3 * np.sin(joints.sum()), - 3 * np.sin(joints[0]+joints[1]) - 3 * np.sin(joints.sum()), - 3 * np.sin(joints.sum())]
+         ])
     return jacobian
+
 
   # Estimate control inputs for open-loop control
   def control_open(self,image):
@@ -90,29 +97,31 @@ class image_converter:
     q_d = q + (dt * np.dot(J_inv, self.error.transpose()))  # desired joint angles to follow the trajectory
     return q_d
     '''
+  
+  
+  def callback1(self,data):
+    # Recieve the image
+    try:
+        self.end_eff = data
+    except CvBridgeError as e:
+        print(e)
+   
 
   # Recieve data, process it, and publish
   def callback(self,data):
     # Recieve the image
     try:
-      cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
+        joints = data
     except CvBridgeError as e:
-      print(e)
+        print(e)
+    
+    end_calc = forward_kinematics(joints)
 
-    # Perform image processing task (your code goes here)
-    # The image is loaded as cv_imag
-
-    # Uncomment if you want to save the image
-    #cv2.imwrite('image_copy.png', cv_image)
-
-    cv2.imshow('window', cv_image)
-    cv2.waitKey(3)
-
-    # publish robot joints angles (lab 1 and 2)
-    self.joints=Float64MultiArray()
-    self.joints.data= self.detect_joint_angles(cv_image)
+    print("END_CALC: " + end_calc)
+    print("END_IMG: " + self.end_eff)
 
 
+    '''
     # compare the estimated position of robot end-effector calculated from images with forward kinematics(lab 3)
     x_e = self.forward_kinematics(cv_image)
     x_e_image = self.detect_end_effector(cv_image)
@@ -144,6 +153,8 @@ class image_converter:
       self.robot_joint3_pub.publish(self.joint3)
     except CvBridgeError as e:
       print(e)
+    
+    '''
 
 # call the class
 def main(args):
