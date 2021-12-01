@@ -31,7 +31,7 @@ class control:
 
     self.end_eff_sub = rospy.Subscriber("/end_eff",Float64MultiArray, self.callback1)
     self.joints_sub = rospy.Subscriber("/joints_pos",Float64MultiArray, self.callback2)
-    self.target_sub = rospy.Subscriber("/target_control/target_pos",Float64MultiArray, self.callback3)
+    self.target_sub = rospy.Subscriber("/target_pos",Float64MultiArray, self.callback3)
 
 
     # record the begining time
