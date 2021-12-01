@@ -11,7 +11,7 @@ from std_msgs.msg import Float64MultiArray
 from cv_bridge import CvBridge, CvBridgeError
 
 
-class image_converter:
+class vision_1:
 
   # Defines publisher and subscriber
   def __init__(self):
@@ -219,7 +219,7 @@ class image_converter:
 
 # call the class
 def main(args):
-  ic = image_converter()
+  ic = vision_1()
   try:
     rospy.spin()
   except KeyboardInterrupt:
