@@ -115,6 +115,10 @@ class control:
     
     # desired trajectory
     pos_d = target
+    print(pos_d)
+    print(self.end_eff)
+
+
     # estimate derivative of desired trajectory
     self.error = (pos_d - self.end_eff)/dt
     q_d = self.joints + (dt * np.dot(J_inv, self.error.transpose()))  # desired joint angles to follow the trajectory
