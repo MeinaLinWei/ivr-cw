@@ -11,7 +11,7 @@ from std_msgs.msg import Float64MultiArray
 from cv_bridge import CvBridge, CvBridgeError
 
 
-class image_converter:
+class vision_2:
 
   # Defines publisher and subscriber
   def __init__(self):
@@ -121,6 +121,9 @@ class image_converter:
     self.joints.data = a
     print(a)
 
+        # detect robot end-effector from the image
+  
+
     cv2.waitKey(1)
 
     try:
@@ -138,6 +141,22 @@ class image_converter:
       # find the distance between two circles
       dist = np.sum((circle1Pos - circle2Pos)**2)
       return 4 / np.sqrt(dist)
+  
+  def detect_end_effector(self):
+    camera_1 = self.pixel2meter(self.image1)
+    camera_2 = self.pixel2meter(self.image2)
+
+    # Obtain the centre of each coloured blob 
+    redYZ = camera_1 * self.detect_red(self.image1)
+    redXZ = camera_2 * self.detect_red(self.image2)
+    red_blob = np.array([redXZ[0], redYZ[0], - redXZ[1]])
+  
+    greenYZ = camera_1 * self.detect_green(self.image1)
+    greenXZ = camera_2 * self.detect_green(self.image2)
+    green_blob = np.array([greenXZ[0], greenYZ[0], - greenXZ[1]])
+    
+    endPos = red_blob - green_blob
+    return endPos
 
   def detect_joint_angles(self):
       camera_1 = self.pixel2meter(self.image1)
@@ -219,7 +238,7 @@ class image_converter:
 
 # call the class
 def main(args):
-  ic = image_converter()
+  ic = vision_2()
   try:
     rospy.spin()
   except KeyboardInterrupt:
