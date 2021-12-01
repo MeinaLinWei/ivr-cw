@@ -16,7 +16,7 @@ class vision_2:
   # Defines publisher and subscriber
   def __init__(self):
     # initialize the node named vision 1
-    rospy.init_node('vision_1', anonymous=True)
+    rospy.init_node('vision_2', anonymous=True)
 
     # initialize a publisher to send images from camera1 to a topic named image_topic1
     self.image_pub1 = rospy.Publisher("image_topic1",Image, queue_size = 1)
@@ -125,7 +125,9 @@ class vision_2:
     print(a)
 
     # detect robot end-effector from the image
-    end_eff = self.detect_end_effector()
+    self.end_eff = Float64MultiArray()
+    self.end_eff.data = self.detect_end_effector()
+
 
     cv2.waitKey(1)
 
@@ -133,7 +135,7 @@ class vision_2:
       self.image_pub1.publish(self.bridge.cv2_to_imgmsg(self.image1, "bgr8"))
       self.image_pub2.publish(self.bridge.cv2_to_imgmsg(self.image2, "bgr8"))
       self.joints_pub.publish(self.joints)
-      self.end_eff_pub.publish(end_eff)
+      self.end_eff_pub.publish(self.end_eff)
 
     except CvBridgeError as e:
       print(e)
