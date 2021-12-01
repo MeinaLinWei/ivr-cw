@@ -24,8 +24,8 @@ class control:
     
     # initialize a publisher to send joints' angular position to the robot
     self.robot_joint1_pub = rospy.Publisher("/robot/joint1_position_controller/command", Float64, queue_size=10)
-    self.robot_joint2_pub = rospy.Publisher("/robot/joint2_position_controller/command", Float64, queue_size=10)
     self.robot_joint3_pub = rospy.Publisher("/robot/joint3_position_controller/command", Float64, queue_size=10)
+    self.robot_joint4_pub = rospy.Publisher("/robot/joint4_position_controller/command", Float64, queue_size=10)
     # initialize the bridge between openCV and ROS
     self.bridge = CvBridge()
 
@@ -142,8 +142,8 @@ class control:
     # Publish the results
     try:
       self.robot_joint1_pub.publish(self.joint1)
-      self.robot_joint2_pub.publish(self.joint2)
       self.robot_joint3_pub.publish(self.joint3)
+      self.robot_joint4_pub.publish(self.joint4)
     except CvBridgeError as e:
       print(e)
 
